@@ -1,0 +1,28 @@
+{
+  "name": "@wesleytodd/eslint-configless-cli",
+  "version": "0.0.1",
+  "description": "Wrap eslint and a config into a standalone cli",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "cl-eslint": "./bin/cl-eslint.js"
+  },
+  "scripts": {
+    "test": "mocha",
+    "test:inspect": "mocha --inspect --inspect-brk",
+    "lint": "./bin/cl-eslint.js .",
+    "prerelease": "npm run lint && npm test && npm version \"${1:-patch}\" && npm login",
+    "release": "npm publish --access=public --tag=\"${2:-latest}\"",
+    "postrelease": "(npm logout || true) && git push --follow-tags && gh release create --draft --generate-notes \"v$(cat package.json | jq -r .version)\""
+  },
+  "author": "Wes Todd <wes@wesleytodd.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^10.4.0",
+    "mocha": "^11.7.5"
+  },
+  "dependencies": {
+    "@eslint/js": "^10.0.1",
+    "loggerr": "^4.6.0"
+  }
+}

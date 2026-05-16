@@ -1,0 +1,55 @@
+name: Test
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x, 24.x, 25.x]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install
+        run: npm run setup:ci
+      - name: Lint
+        run: npm run lint
+      - name: Test
+        run: npm test
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+      - name: Install
+        run: npm run setup:ci
+      - run: |
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          npm run test:cover >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+  test-vlt:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+      - name: vlt install
+        run: npx -y vlt@latest install
+      - name: vlt install and test
+        run: npx -y vlt@latest run test
+      - run: |
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          npx -y vlt@latest run test:cover >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
