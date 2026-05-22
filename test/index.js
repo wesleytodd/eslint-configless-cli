@@ -1,13 +1,24 @@
-import { suite, test } from 'mocha';
+import { suite, test, beforeEach } from 'mocha';
 import assert from 'node:assert';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import { ConfiglessESLint, cli } from '../index.js';
 
-// NOTE: this comment is used in the tests, keep must start with a lowercase letter
-// here is my comment
+const TMP_DIR = path.join(import.meta.dirname, 'tmp');
+const FIX_DIR = path.join(import.meta.dirname, 'fixtures');
 
 suite('ConfiglessESLint', () => {
+  beforeEach(async () => {
+    try {
+      await fs.rm(TMP_DIR, {
+        recursive: true
+      });
+    } catch {
+      // ignore error
+    }
+    await fs.mkdir(TMP_DIR);
+  });
+
   test('requires overrideConfig', async () => {
     assert.throws(() => new ConfiglessESLint());
   });
@@ -53,11 +64,33 @@ suite('ConfiglessESLint', () => {
       },
     });
 
-    const outFile = path.join(import.meta.dirname, 'results.txt');
-    await main(['--no-color', `--output-file=${outFile}`, import.meta.filename]);
+    const outFile = path.join(TMP_DIR, 'results.txt');
+    await main(['--no-color', `--output-file=${outFile}`, path.join(FIX_DIR, 'file.js')]);
 
     const file = await fs.readFile(outFile, 'utf8');
     assert(file.includes('capitalized-comments'));
-    await fs.rm(outFile);
+  });
+
+  test('cli writes fixed to disk', async () => {
+    const main = cli({
+      overrideConfig: {
+        rules: {
+          'capitalized-comments': ['error', 'always']
+        }
+      }
+    });
+
+    const outFile = path.join(TMP_DIR, 'results.txt');
+    const fixFile = path.join(FIX_DIR, 'file.js');
+    const lintFile = path.join(TMP_DIR, 'file.js');
+    await fs.copyFile(fixFile, lintFile);
+
+    await main(['--no-color', `--output-file=${outFile}`, '--fix', lintFile]);
+
+    const results = await fs.readFile(outFile, 'utf8');
+    assert(!results.includes('capitalized-comments'));
+
+    const file = await fs.readFile(lintFile, 'utf8');
+    assert(file.includes('// Here is my comment'));
   });
 });
