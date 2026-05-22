@@ -180,6 +180,7 @@ export function cli (config) {
     if (values['print-config']) {
       throw new Error('--print-config not yet implemented');
     }
+
     if (values.init) {
       throw new Error('--init not yet implemented');
     }

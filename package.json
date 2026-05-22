@@ -8,16 +8,20 @@
     "cl-eslint": "./bin/cl-eslint.js"
   },
   "scripts": {
+    "setup": "npm install",
+    "setup:ci": "npm ci",
     "test": "mocha",
     "test:inspect": "mocha --inspect --inspect-brk",
+    "test:cover": "c8 mocha",
     "lint": "./bin/cl-eslint.js .",
-    "prerelease": "npm run lint && npm test && npm version \"${1:-patch}\" && npm login",
-    "release": "npm publish --access=public --tag=\"${2:-latest}\"",
+    "prerelease": "sh -c 'npm run lint && npm test && npm version \"${1:-patch}\" && npm login'",
+    "release": "sh -c 'npm publish --access=public --tag=\"${2:-latest}\"'",
     "postrelease": "(npm logout || true) && git push --follow-tags && gh release create --draft --generate-notes \"v$(cat package.json | jq -r .version)\""
   },
   "author": "Wes Todd <wes@wesleytodd.com>",
   "license": "ISC",
   "devDependencies": {
+    "c8": "^11.0.0",
     "eslint": "^10.4.0",
     "mocha": "^11.7.5"
   },

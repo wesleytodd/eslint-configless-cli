@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x, 22.x, 24.x, 25.x]
+        node-version: [20.x, 22.x, 24.x, 26.x]
     steps:
       - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
@@ -22,6 +22,20 @@ jobs:
         run: npm run lint
       - name: Test
         run: npm test
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Use Node.js 26.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 26.x
+      - name: Install
+        run: npm run setup:ci
+      - run: |
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          npm run lint >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
   coverage:
     runs-on: ubuntu-latest
     steps:
